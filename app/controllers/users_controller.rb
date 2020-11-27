@@ -20,10 +20,16 @@ class UsersController < ApplicationController
     user = User.new
 
     user.username = params.fetch("input_username")
+    user.password = params.fetch("input_password")
+    user.password_confirmation = params.fetch("input_password_confirmation")
 
-    user.save
+    save_status = user.save
+    if save_status == true
+      redirect_to("/users/#{user.username}", { :notice => "Welcome, " + user.username})
+    else
+      redirect_to("/user_sign_up" , {:alert => user.errors.full_messages.to_sentence})
+    end
 
-    redirect_to("/users/#{user.username}")
   end
 
   def update
