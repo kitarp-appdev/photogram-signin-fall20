@@ -3,6 +3,35 @@ class UsersController < ApplicationController
   def new_registration_form
     render({ :template => "users/signup_form.html.erb"})
   end
+
+  def sign_out
+    reset_session
+
+    redirect_to("/", {:notice => "See ya later!"})
+  end
+
+  def sign_in
+    render({ :template => "users/signin.html.erb" })
+  end
+
+  def authenticate
+    # render({ :plain})
+    un = params.fetch("input_username")
+    pw = params.fetch("input_password")
+
+    user = User.where({ :username => un}).at(0)
+    if user == nil
+      redirect_to("/user_sign_in", { :alert => "No one here"})
+    else 
+      if user.authenticate(pw)
+        session.store(:user_id, user.id)
+        redirect_to("/", {:notice => "Welcome back, " + user.username})
+      else
+        redirect_to("/user_sign_in", {:alert => "Well tried"}) 
+      end
+    end 
+  end
+
   def index
     @users = User.all.order({ :username => :asc })
 
@@ -25,6 +54,7 @@ class UsersController < ApplicationController
 
     save_status = user.save
     if save_status == true
+      session.store(:user_id, user.id)
       redirect_to("/users/#{user.username}", { :notice => "Welcome, " + user.username})
     else
       redirect_to("/user_sign_up" , {:alert => user.errors.full_messages.to_sentence})
